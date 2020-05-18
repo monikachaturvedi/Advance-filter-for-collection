@@ -1,0 +1,284 @@
+{% if settings.sidebar_filter_multichoices %}
+{% assign type_input = 'checkbox' %}
+{% else %}
+{% assign type_input = 'radio' %}
+{% endif %}
+
+<div class="col-left sidebar col-sm-3 col-sm-pull-9">
+  <div class="col-left sidebar">
+    {% if settings.sidebar_categoryblock_enable %}
+    <div id="sidebar-nav" class="block sidebar-nav-left conditiveSidenavLeft left-categories">
+      <div class="block-title">
+        <span>{{ settings.sidebar_categoryblock_header }}</span>
+      </div>
+      <div class="block-content">
+        <ul id="sidebar-nav-menu">
+          {% for link in linklists[settings.sidebar_categoryblock_linklist].links %}
+          
+          {% assign avtive = '' %}
+          {% if link.active %}{% assign avtive = 'active' %}{% endif %}
+          {% if linklists[link.handle] != empty %}
+          {% for sublink in linklists[link.handle].links %}
+          {% if sublink.active %}{% assign avtive = 'active' %}{% endif %}
+          {% if linklists[sublink.handle] != empty %}
+          {% for subsublink in linklists[sublink.handle].links %}
+          {% if subsublink.active %}{% assign avtive = 'active' %}{% endif %}
+          {% endfor %}
+          {% endif %}
+          {% endfor %}
+          {% endif %}
+          
+          <li class="level0 nav-0 parent home collapsible">
+            {% if linklists[link.handle] != empty %}
+            <span class="plus-right {{avtive}}" onclick="Codnitive.expandMenu(this.parentNode)"></span>
+            {% endif %}
+            <a class="collapsible-wrapper {{avtive}}" href="{{ link.url }}"><span class="category_name">{{ link.title }}</span></a>
+            {% if linklists[link.handle] != empty %}
+            <ul class="level0 collapsible" data-expanded="{% if avtive != '' %}1{% else %}0{% endif %}">
+            {% for sublink in linklists[link.handle].links %}
+              
+              {% assign avtive_level_2 = '' %}
+              {% if sublink.active %}{% assign avtive_level_2 = 'active' %}{% endif %}
+              {% if linklists[sublink.handle] != empty %}
+              {% for subsublink in linklists[sublink.handle].links %}
+              {% if subsublink.active %}{% assign avtive_level_2 = 'active' %}{% endif %}
+              {% endfor %}
+              {% endif %}
+              
+              <li class="level2 collapsible">
+                {% if linklists[sublink.handle] != empty %}
+                <span class="plus-right {{avtive_level_2}}" onclick="Codnitive.expandMenu(this.parentNode)"></span>
+                {% endif %}
+                <a class="collapsible-wrapper {{avtive_level_2}}" href="{{ sublink.url }}"><span class="category_name">{{ sublink.title }}</span></a>
+                {% if linklists[link.handle] != empty %}
+                <ul class="level0 collapsible" data-expanded="{% if avtive_level_2 != '' %}1{% else %}0{% endif %}">
+                  {% for subsublink in linklists[sublink.handle].links %}
+                  <li class="level2">
+                    <a class="collapsible-wrapper {% if subsublink.active %}active{% endif %}" href="{{ subsublink.url }}"><span class="category_name">{{ subsublink.title }}</span></a>
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    
+    
+    {% for i in (1..20) %}
+          {% capture color_text_index %}color_text_{{i}}{% endcapture %}
+          {% capture color_text %}{{ settings[color_text_index] | strip }}{% endcapture %}
+          {% capture color_text_handleize %}{{ color_text | handleize }}{% endcapture %}
+          {% capture color_image %}color-{{i}}.png{% endcapture %}
+          {% if collection.all_tags contains color_text %}
+    		{% assign found = true %}
+    	  {% endif %}
+    {% endfor %}
+    {% if settings.enable_shop_by_tags_1 and found == true %}
+    {% assign found = false %}
+        
+    <div class="block">
+      <div class="block-title">
+        <span>{{ settings.shop_by_tags_1_title }}</span>
+      </div>
+      <div class="block-content clear-wrap">
+        <ul id="color-filter" class="filter-list">
+          {% for i in (1..20) %}
+          {% capture color_text_index %}color_text_{{i}}{% endcapture %}
+          {% capture color_text %}{{ settings[color_text_index] | strip }}{% endcapture %}
+          {% capture color_text_handleize %}{{ color_text | handleize }}{% endcapture %}
+          {% capture color_image %}color-{{i}}.png{% endcapture %}
+          {% if collection.all_tags contains color_text %}
+          <li>
+            {% assign tag_value = tag | handleize %}
+            <input name="{{color_text_handleize}}" class="hidden-class coll-filter" id="hidden-{{ color_text_handleize }}" type="{{type_input}}" value="{{ color_text_handleize }}" {% if current_tags contains color_text %}checked{% endif %}/>
+            <label for="hidden-{{ color_text_handleize }}" {% if current_tags contains tag %} class="active" {% endif %} title="{{tag}}">
+              {{ color_image | asset_url | img_tag }}
+            </label>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% assign tags = settings.shop_by_tags_2_list_tags | split: ',' %}
+    {% assign has_tags = false %}
+    {% for t in tags %}
+    {% assign tag = t | strip %}
+    {% assign tag_value = tag | handleize %}
+    {% if current_tags contains tag or collection.all_tags contains tag %}
+    {% assign has_tags = true %}
+    {% endif %}
+    {% endfor %}
+    {% if settings.enable_shop_by_tags_2 and has_tags %}
+    <div class="block">
+      <div class="block-title">
+        <span>{{ settings.shop_by_tags_2_title }}</span>
+      </div>
+      <div class="block-content clear-wrap">
+        <ul id="size-filter" class="filter-list filter-text">
+          {% for t in tags %}
+          {% assign tag = t | strip %}
+          {% assign tag_value = tag | handleize %}
+          {% if current_tags contains tag %}
+          <li><input name="{{settings.shop_by_tags_2_title | handleize}}" class="hidden coll-filter" id="hidden-{{tag_value}}" type="{{type_input}}" value="{{ tag_value }}" checked/><label for="hidden-{{tag_value}}">{{tag}}</label></li>
+          {% elsif collection.all_tags contains tag %}
+          <li><input name="{{settings.shop_by_tags_2_title | handleize}}" class="hidden coll-filter" id="hidden-{{tag_value}}" type="{{type_input}}" value="{{ tag_value }}"/><label for="hidden-{{tag_value}}">{{tag}}</label></li>
+          {% endif %}
+          {% endfor %}
+        </ul><!-- end list -->
+      </div><!-- end menu-widget -->
+    </div><!-- end widget -->
+    {% endif %}
+    
+    {% assign tags = settings.shop_by_tags_3_list_tags | split: ',' %}
+    {% assign has_tags = false %}
+    {% for t in tags %}
+    {% assign tag = t | strip %}
+    {% assign tag_value = tag | handleize %}
+    {% if current_tags contains tag or collection.all_tags contains tag %}
+    {% assign has_tags = true %}
+    {% endif %}
+    {% endfor %}
+    {% if settings.enable_shop_by_tags_3 and has_tags %}
+    <div class="block">
+      <div class="block-title">
+        <span>{{ settings.shop_by_tags_3_title }}</span>
+      </div>
+      <div class="block-content clear-wrap">
+        <ul class="filter-list filter-text">
+          {% for t in tags %}
+          {% assign tag = t | strip %}
+          {% assign tag_value = tag | handleize %}
+          {% if current_tags contains tag %}
+          <li>
+            <input name="{{settings.shop_by_tags_3_title | handleize}}" class="hidden coll-filter" type="{{type_input}}" id="hidden-{{tag_value}}" value="{{ tag_value }}" checked/>
+            <label for="hidden-{{tag_value}}">{{tag}}</label>
+          </li>
+          {% elsif collection.all_tags contains tag or collection.tags contains tag %}
+          <li>
+            <input name="{{settings.shop_by_tags_3_title | handleize}}" class="hidden coll-filter" type="{{type_input}}" id="hidden-{{tag_value}}" value="{{ tag_value }}"/>
+            <label for="hidden-{{tag_value}}">{{tag}}</label>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% if settings.enable_shop_by_brand %}
+    <!-- Filter by Brand -->
+    <div class="block">
+      <div class="block-title">
+        <span>{{ settings.shop_by_brand_title }}</span>
+      </div>
+      <div class="block-content clear-wrap">
+        <ul class="filter-list filter-text">
+          {% for product_vendor in collection.all_vendors %}
+          {% assign product_vendor_tag = product_vendor | handle %}
+          {% if product_vendor_tag != '' %}
+          {% if collection.all_tags contains product_vendor or collection.tags contains product_vendor %}
+          <li>
+            <input {% if current_tags contains product_vendor or current_tags contains product_vendor_tag %}checked{% endif %} name="brand-filter" class="hidden coll-filter" type="{{type_input}}" id="hidden-{{ product_vendor | handle }}" value="{{ product_vendor | handle }}"/>
+            <label for="hidden-{{ product_vendor | handle }}">{{product_vendor}}</label>
+          </li>
+          {% endif %}
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <!-- End Filter by Brand -->
+    {% endif %}
+    
+    {% if settings.enable_shop_by_type %}
+    <!-- Filter by Type -->
+    <div class="block">
+      <div class="block-title">
+        <span>{{ settings.shop_by_type_title }}</span>
+      </div>
+      <div class="block-content clear-wrap">
+        <ul class="filter-list filter-text">
+          {% for product_type in collection.all_types %}
+          {% assign product_type_tag = product_type | handle %}
+          {% if product_type_tag != '' %}
+          {% if collection.all_tags contains product_type or collection.tags contains product_type %}
+          <li>
+            <input {% if current_tags contains product_type_tag or current_tags contains product_type %}checked{% endif %} name="type-filter" class="hidden coll-filter" type="{{type_input}}" id="hidden-{{ product_type | handle }}" value="{{ product_type | handle }}"/>
+            <label for="hidden-{{ product_type | handle }}">{{product_type}}</label>
+          </li>
+          {% endif %}
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <!-- End Filter by Type -->
+    {% endif %}
+    
+    {% if settings.sidebar_staticblock_enable %}
+    <div class="block block-custom-html">
+      <div id="custom-html" class="block-title">
+        <span>{{ settings.sidebar_staticblock_header }}</span>
+      </div>
+      <div class="block-content">
+        <p>{{settings.sidebar_staticblock_text}}</p>
+      </div>
+      <div class="images-block"><img src="{{ 'sidebar_staticblock.jpg' | asset_url }}" alt=""></div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+
+<script>
+  Shopify.queryParams = {};
+  if (location.search.length) {
+    for (var aKeyValue, i = 0, aCouples = location.search.substr(1).split('&'); i < aCouples.length; i++) {
+      aKeyValue = aCouples[i].split('=');
+      if (aKeyValue.length > 1) {
+        Shopify.queryParams[decodeURIComponent(aKeyValue[0])] = decodeURIComponent(aKeyValue[1]);
+      }
+    }
+  }
+  var collFilters = jQuery('.coll-filter');
+  collFilters.change(function() {
+    var newTags = [];
+    var newURL = '';
+    delete Shopify.queryParams.page;   
+    collFilters.each(function() { 
+      if (jQuery(this).val() && jQuery(this).is(':checked')) {
+        newTags.push(jQuery(this).val());
+      }
+    });   
+    {% if collection.handle %}
+    newURL = '/collections/' + '{{ collection.handle }}';
+    if (newTags.length) {
+      newURL += '/' + newTags.join('+');
+    }
+    var search = jQuery.param(Shopify.queryParams);
+    if (search.length) {
+      newURL += '?' + search;
+    }
+    location.href = newURL;    
+    {% else %}
+    if (newTags.length) {
+      Shopify.queryParams.constraint = newTags.join('+');        
+    }
+    else {
+      delete Shopify.queryParams.constraint;
+    }
+    location.search = jQuery.param(Shopify.queryParams).replace(/\+/g, '%20');
+    {% endif %}      
+  });
+ 
+</script>
